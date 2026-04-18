@@ -1,0 +1,29 @@
+name: WebAppPipeline
+
+trigger:
+- none
+
+pool: KarunaPool
+
+steps:
+
+# Get code
+- checkout: self
+
+# Create zip of static files
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+    replaceExistingArchive: true
+
+# Deploy to Azure Web App
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'WebAppStramFlixConnection'
+    appType: 'webAppLinux'
+    appName: 'SteamFlixwebapp'
+    package: '$(Build.ArtifactStagingDirectory)/app.zip'
+    runtimeStack: 'NODE|22-lts'
